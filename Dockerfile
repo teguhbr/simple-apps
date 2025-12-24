@@ -1,7 +1,14 @@
-FROM node:18-alpine
+# Use multi-stage build to optimize the final image size
+FROM node:18-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY . .
+
+# Copy only necessary files for building the app
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY package*.json ./
+COPY app/. .
 EXPOSE 3000
 CMD ["npm", "start"]
